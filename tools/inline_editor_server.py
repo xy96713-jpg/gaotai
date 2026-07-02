@@ -54,9 +54,13 @@ def load_local_env() -> None:
                 continue
             key, value = line.split("=", 1)
             key = key.strip()
-            if not key or key in os.environ:
+            if not key:
                 continue
             value = value.strip().strip('"').strip("'")
+            if not value:
+                continue
+            if key in os.environ and os.environ.get(key, "").strip():
+                continue
             os.environ[key] = value
 
 
