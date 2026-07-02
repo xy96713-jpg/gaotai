@@ -2,15 +2,15 @@
 
 English · [中文](README.md)
 
-Gaotai is a local writing desk you can hand to Codex or another coding agent to deploy.
+Move AI-assisted writing out of the chat box and into an editor.
 
-Send your agent this repo, let it clone the project, copy `.env.local.example`, fill in your model API settings, and start the local server. You then open a browser editor instead of writing inside a chat box.
+Gaotai is a local writing workbench for Chinese long-form drafts. Hand this GitHub repo to Codex, Claude Code, Cursor Agent, or another coding agent, fill in your own model API settings, and run it on your machine.
 
-Gaotai is less about “generate an article” and more about what happens after the first draft. Select one sentence and ask for rewrites. Mark a line as liked when it sounds right. Mark a line as disliked when it feels empty, generic, or too AI-written. Those choices go into a style memory and come back during later rewrites, paragraph fills, and final review.
+Gaotai is not built around “generate a full article.” It is built around what happens after the first draft: rewrite one selected sentence, save lines you like, save lines you dislike, and reuse those preferences during later rewrites, paragraph fills, and final review.
 
-It runs on your own machine. Drafts, versions, and style memory stay local. The default model route uses any OpenAI-compatible `/chat/completions` API, so the project is not tied to one provider.
+Drafts, versions, and style memory stay local. The model route uses an OpenAI-compatible `/chat/completions` API, so the project is not tied to one provider.
 
-## Agent Setup Prompt
+## Give This To Your Agent
 
 ```text
 Clone https://github.com/xy96713-jpg/gaotai, copy .env.local.example to .env.local,
@@ -18,24 +18,27 @@ fill GAOTAI_API_KEY / GAOTAI_BASE_URL / GAOTAI_MODEL, run make workbench-start,
 then open http://127.0.0.1:8766/v2/.
 ```
 
-## Good Fit
+## Why Not Just Use Chat
 
-- You already use AI for articles, scripts, demos, or project notes.
-- You care more about editing a draft than getting a single full response from chat.
-- You want the system to remember which lines fit your style and which ones should be avoided.
-- You are comfortable with a local Python service, API keys, and local file storage.
+Chat is good for asking questions. It is awkward for editing a long draft over time.
+
+Gaotai gives you a writing surface with reusable actions:
+
+| Action | What it does |
+| --- | --- |
+| Rewrite | Select one sentence and generate candidates for that sentence only. |
+| Like | Save a line that fits your style so future edits can move closer to it. |
+| Dislike | Save empty, generic, over-explained, or AI-sounding lines so future edits avoid them. |
+| Fill | Write a short note in a blank paragraph and let the model fill it using nearby context. |
+| Final review | Check wording, repetition, loose structure, filler, and speaking rhythm without auto-rewriting the draft. |
 
 ## Core Loop
 
 ```text
-prepare material -> draft -> rewrite one sentence -> save preferences -> final review -> export
+prepare material -> draft -> rewrite selected lines -> save preferences -> final review -> export
 ```
 
-The middle matters most:
-
-- **Rewrite**: select one sentence and rewrite only that sentence.
-- **Like / dislike**: save what should be repeated or avoided next time.
-- **Style memory**: carry those choices into later rewrites, paragraph fills, and final review.
+The style memory is the important part. It does not train a model. It keeps a reusable record of your editing decisions: which lines can stay, and which shapes should show up less often next time.
 
 ## Quick Start
 
