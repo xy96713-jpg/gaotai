@@ -8,7 +8,7 @@ Gaotai is a local writing workbench for Chinese long-form drafts. Hand this GitH
 
 Gaotai is not built around “generate a full article.” It is built around what happens after the first draft: rewrite one selected sentence, save lines you like, save lines you dislike, and reuse those preferences during later rewrites, paragraph fills, and final review.
 
-Drafts, versions, and style memory stay local. The model route uses an OpenAI-compatible `/chat/completions` API, so the project is not tied to one provider.
+Drafts, versions, and style memory stay local. For Chinese writing, you can plug in Chinese-strong domestic models first, or use any OpenAI-compatible `/chat/completions` API. Gaotai is not tied to one provider.
 
 ## Give This To Your Agent
 
