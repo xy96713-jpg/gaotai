@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>视频材料</title>
+    <link rel="stylesheet" href="/video-analysis/styles.css?v=20260702-real-progress-v3" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <h1>视频材料</h1>
+          <p id="pageHint">贴链接，保存成本地视频。</p>
+        </div>
+        <button id="openHistory" type="button">历史 <span id="jobsMeta">0</span></button>
+      </header>
+
+      <section class="source-switch" aria-label="视频来源">
+        <button id="linkMode" class="active" type="button">链接</button>
+        <button id="localMode" type="button">本地文件</button>
+      </section>
+
+      <section class="runbar">
+        <textarea id="urlInput" placeholder="贴 YouTube 或 B站链接"></textarea>
+        <div id="localInputWrap" class="local-input hidden">
+          <input id="localVideoInput" type="file" accept="video/mp4,video/quicktime,video/x-m4v,video/x-matroska,video/webm,video/*" />
+          <span id="localFileName">选择 mp4 / mov / mkv / webm</span>
+          <small id="transcriptionHealth" class="transcription-health">转写检测中</small>
+        </div>
+        <div class="run-actions">
+          <button id="startAnalysis" class="primary" type="button">下载</button>
+          <details class="options">
+            <summary>设置</summary>
+            <div class="options-menu">
+              <label><input id="extractFrames" type="checkbox" checked disabled /> 保存视频+截图</label>
+              <label><input id="useBrowserCookies" type="checkbox" checked /> 读取 Chrome 登录态</label>
+              <label><input id="disableWhisperFallback" type="checkbox" checked /> 快速模式（不转写）</label>
+              <label><input id="skipRewrites" type="checkbox" checked /> 仅材料</label>
+              <label><input id="showErrors" type="checkbox" /> 失败任务</label>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <section class="current">
+          <div class="result-head">
+            <div>
+              <span id="jobStatus" class="status">待命</span>
+              <h2 id="resultTitle">贴一个视频链接</h2>
+            </div>
+            <div id="quickMeta" class="quick-meta"></div>
+          </div>
+          <div id="jobSummary" class="status-log hidden">等待任务。</div>
+          <div class="pipeline-row">
+            <div id="pipelineStatus" class="pipeline-status"></div>
+            <button id="refetchFrames" class="quiet hidden" type="button">补截图</button>
+            <button id="saveMaterialPackage" class="quiet hidden" type="button">材料包</button>
+          </div>
+          <div id="downloadProgress" class="download-progress hidden">
+            <div class="download-progress__head">
+              <strong id="downloadProgressLabel">下载中</strong>
+              <span id="downloadProgressMeta"></span>
+            </div>
+            <div class="download-progress__track">
+              <span id="downloadProgressBar"></span>
+            </div>
+          </div>
+
+          <section id="videoStage" class="video-stage hidden">
+            <div id="videoPlayer" class="video-player">
+            </div>
+          </section>
+          <div id="playbackSource" class="playback-source hidden"></div>
+
+          <section class="video-summary hidden">
+            <div>
+              <h3 id="summaryTitle">先看懂</h3>
+              <p id="coreClaim">暂无。</p>
+              <ul id="summaryBullets" class="summary-bullets hidden"></ul>
+              <p id="summaryTakeaway" class="summary-takeaway hidden"></p>
+              <div id="materialAcceptance" class="material-acceptance hidden">
+                <div class="material-acceptance-line">
+                  <span id="acceptanceLabel">待验收</span>
+                  <small id="acceptanceSummary"></small>
+                </div>
+                <div id="acceptanceChecks" class="acceptance-checks"></div>
+              </div>
+            </div>
+            <details id="summaryMore" class="summary-more hidden">
+              <summary>更多</summary>
+              <div id="writeDecision" class="write-decision hidden"></div>
+              <div id="writingPack" class="writing-pack hidden"></div>
+            </details>
+          </section>
+
+          <section id="demoDeckSection" class="demo-deck hidden">
+            <div class="section-head deck-head">
+              <div>
+                <h3>拆解</h3>
+                <p id="demoDeckMeta">把能用的画面拎出来。</p>
+              </div>
+              <button id="generateDeck" class="primary" type="button">生成讲稿</button>
+            </div>
+            <div id="demoDeckList" class="demo-deck-list hidden"></div>
+            <div id="demoDeckQuality" class="deck-quality hidden"></div>
+          </section>
+
+          <section id="draftPanel" class="draft-panel hidden">
+            <div class="panel-head">
+              <div>
+                <h3>讲稿</h3>
+                <p id="draftHint" class="hidden"></p>
+              </div>
+              <button id="generateDraft" class="primary hidden" type="button">生成讲稿</button>
+            </div>
+            <div id="draftStatus" class="draft-status hidden"></div>
+            <div id="draftPitch" class="draft-pitch hidden"></div>
+            <div id="deckWorkspace" class="deck-workspace hidden">
+              <div id="deckFocus" class="deck-focus hidden"></div>
+              <div id="deckPreview" class="deck-preview hidden"></div>
+            </div>
+            <div id="draftActions" class="draft-actions hidden">
+              <button id="saveDeckPptx" class="primary" type="button">下载 PPTX</button>
+              <button id="polishDeck" type="button">顺稿</button>
+              <button id="regenerateDraft" type="button">重写</button>
+              <details class="draft-more-actions">
+                <summary>更多</summary>
+                <div class="draft-more-menu">
+                  <button id="copyDraft" type="button">复制 Markdown</button>
+                  <button id="saveDraft" type="button">保存 MD</button>
+                  <button id="saveDeckHtml" type="button">保存页面</button>
+                  <button id="sendWorkbench" type="button">送去写作台</button>
+                </div>
+              </details>
+            </div>
+            <details id="draftMarkdownDetails" class="draft-markdown hidden">
+              <summary>原文</summary>
+              <textarea id="draftEditor" class="draft-editor hidden" placeholder="生成后会出现讲稿。"></textarea>
+            </details>
+            <div id="draftGate" class="draft-gate hidden">
+              <strong id="draftGateLabel">草稿</strong>
+              <span id="draftEngineLabel"></span>
+              <ul id="draftGateList"></ul>
+            </div>
+            <div id="exportLink" class="export-link hidden"></div>
+          </section>
+
+          <section id="anglePanel" class="angle-panel hidden">
+            <div class="section-head compact">
+              <h3>方向</h3>
+              <span>先选方向，再写。</span>
+            </div>
+            <ul id="angleList"></ul>
+          </section>
+
+          <details class="timeline-section evidence-details hidden">
+            <summary class="section-head">
+                  <h3>片段</h3>
+              <span id="timelineMeta">等待字幕。</span>
+            </summary>
+            <div id="timelineList" class="timeline-list"></div>
+          </details>
+        </section>
+      </section>
+
+      <details class="details hidden">
+          <summary>材料</summary>
+        <div class="tabs">
+          <button type="button" class="tab active" data-view="report">报告</button>
+          <button type="button" class="tab" data-view="brief">写稿卡</button>
+          <button type="button" class="tab" data-view="transcript">字幕</button>
+          <button type="button" class="tab" data-view="sourcePack">材料包</button>
+        </div>
+        <div id="jobFiles" class="file-list"></div>
+        <pre id="reportView" class="text-view"></pre>
+        <pre id="briefView" class="text-view hidden"></pre>
+        <pre id="transcriptView" class="text-view hidden"></pre>
+        <pre id="sourcePackView" class="text-view hidden"></pre>
+      </details>
+    </main>
+
+    <aside id="historyDrawer" class="history-drawer hidden" aria-hidden="true">
+      <button id="closeHistory" class="drawer-backdrop" type="button" aria-label="关闭历史"></button>
+      <section class="drawer-panel">
+        <div class="drawer-head">
+          <strong>历史</strong>
+          <button id="closeHistoryPanel" type="button">关闭</button>
+        </div>
+        <div class="history-actions">
+          <button id="refreshJobs" type="button">刷新</button>
+          <button id="rerunJob" type="button">重跑</button>
+          <button id="clearFailed" type="button">清错</button>
+          <button id="clearHistory" type="button">清空</button>
+        </div>
+        <div id="jobList" class="job-list">暂无任务</div>
+        <button id="historyToggle" class="history-toggle hidden" type="button">更多</button>
+      </section>
+    </aside>
+
+    <script src="/video-analysis/app.js?v=20260702-real-progress-v3"></script>
+  </body>
+</html>

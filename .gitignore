@@ -1,0 +1,94 @@
+# Python/runtime
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local virtual environments
+.venv/
+.venv-local-vlm/
+.venv-storm/
+
+# Large local tool payloads and cloned third-party projects
+tools/bin/
+tools/CatGPT-Gateway/
+.cache/external/
+
+# Runtime/generated caches that should stay local.
+# The repo tracks a small, deliberate subset of .cache/writing as workflow
+# reference material. Everything else under .cache is local runtime output:
+# logs, screenshots, model responses, browser smoke reports, backups, and
+# generated article/topic drafts.
+.cache/*
+!.cache/writing/
+.cache/writing/*
+!.cache/writing/.keep
+!.cache/writing/config/
+!.cache/writing/config/*.md
+!.cache/writing/templates/
+!.cache/writing/templates/*.md
+
+# Local generated documents and model artifacts
+.cache/writing/documents/
+.cache/writing/exports/
+.cache/writing/formal_runs/
+.cache/writing/release_checks/
+.cache/writing/selection_requests/
+.cache/writing/selection_responses/
+.cache/writing/topic_archives/
+.cache/writing/**/*.json
+.cache/writing/**/*.jsonl
+.cache/writing/**/*response*
+.cache/writing/**/*request*
+.cache/writing/**/*.png
+.cache/writing/**/*.jpg
+.cache/writing/**/*.jpeg
+
+# Local companion projects and machine-specific stores.
+# Keep these as separate projects/repositories when they mature.
+inline_editor/
+browser_extension/
+obsidian_vault/
+mlx_models/
+video_analysis_v1/
+!video_analysis_v1/
+video_analysis_v1/*
+!video_analysis_v1/index.html
+!video_analysis_v1/app.js
+!video_analysis_v1/styles.css
+.codex-backups/
+humanizer-context.md
+
+# Video-analysis tooling should live in its own project/release path, not in the
+# writing-workbench GitHub release.
+tools/video_analysis_*.py
+tools/video_analysis_*.mjs
+!tools/video_analysis_auth_failure_smoke.mjs
+!tools/video_analysis_browser_matrix_smoke.mjs
+!tools/video_analysis_clean_entry_smoke.mjs
+!tools/video_analysis_click_lifecycle_smoke.mjs
+!tools/video_analysis_drag_drop_smoke.mjs
+!tools/video_analysis_full_qa.mjs
+!tools/video_analysis_local_upload_smoke.mjs
+!tools/video_analysis_professional_deck_smoke.mjs
+!tools/video_analysis_progress_smoke.mjs
+
+# Local backup snapshots
+*.bak*
+*.backup*
+*.backup_*
+*.before_*
+*.autosave_backup_*
+
+# Credentials and local env
+.env
+.env.*
+!.env.local.example
+*.secret
+*credentials*
+*cookies*
+
+# OS/editor
+.DS_Store
+Thumbs.db

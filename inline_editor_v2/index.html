@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>稿台</title>
+    <script>
+      if (window.location.protocol === "file:") {
+        window.location.replace("http://127.0.0.1:8766/v2/");
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css?v=visual-workbench-20260701e" />
+  </head>
+  <body class="lite-mode">
+    <div id="workspaceToast" class="workspace-toast" hidden aria-live="polite"></div>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <h1>稿台</h1>
+        </div>
+        <details class="status-fold">
+          <summary>状态</summary>
+          <div id="bridgeStatus" class="status">connecting</div>
+        </details>
+      </header>
+
+      <section class="workspace">
+        <article class="paper" aria-label="editor">
+          <div class="document-head">
+            <label class="title-field">
+              <span>标题</span>
+              <input id="documentTitle" type="text" value="加载最新稿" placeholder="输入标题" />
+            </label>
+            <div class="document-actions">
+              <button type="button" id="newTopicDraft">新主题</button>
+              <button type="button" id="saveWorkspace">保存</button>
+              <button type="button" id="exportMd">导出</button>
+              <button type="button" id="presentDraft">演示</button>
+              <button type="button" id="finalReviewButton">收稿</button>
+              <button type="button" id="quickAuditButton" hidden aria-hidden="true" tabindex="-1">扫硬伤</button>
+            </div>
+            <div class="document-status">
+              <span id="documentState">新稿未保存</span>
+              <span id="saveState">本地草稿</span>
+              <span id="draftStats">0 字</span>
+              <span id="provenanceState"></span>
+              <span id="draftNotice">已打开工作区文档</span>
+              <span id="auditSummary"></span>
+              <details id="topicFold" class="topic-fold">
+                <summary>打开主题</summary>
+                <div class="topic-strip">
+                  <div class="topic-list-head">
+                    <span>最近正式主题</span>
+                    <button type="button" id="refreshDocumentsTop">刷新</button>
+                  </div>
+                  <div id="documentList" class="document-list">暂无正式主题。</div>
+                  <details id="topicManageFold" class="topic-manage-fold">
+                    <summary>管理主题</summary>
+                    <div class="topic-filter-row">
+                      <input id="documentSearch" type="search" placeholder="搜索标题或 ID" />
+                      <div class="topic-filter-tabs" aria-label="主题筛选">
+                        <button type="button" data-document-filter="formal" class="is-active">正式</button>
+                        <button type="button" data-document-filter="experiment">实验</button>
+                        <button type="button" data-document-filter="deleted">已删除</button>
+                        <button type="button" data-document-filter="all">全部</button>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              </details>
+              <details class="latest-fold">
+                <summary>版本</summary>
+                <div class="sync-strip">
+                  <span id="leftStatus" class="sync-pill">当前：加载中</span>
+                  <span id="rightStatus" class="sync-pill">最新：加载中</span>
+                  <button type="button" id="syncLatest">刷新</button>
+                  <button type="button" id="loadGeneratedTop" class="primary small-primary">载入</button>
+                  <div class="topic-archive">
+                    <div class="topic-archive-head">
+                      <span>主题存档</span>
+                      <div class="topic-archive-actions">
+                        <button type="button" id="refreshTopicArchive">刷新</button>
+                        <button type="button" id="openInObsidian" hidden aria-hidden="true" tabindex="-1">打开笔记</button>
+                      </div>
+                    </div>
+                    <div id="topicArchiveList" class="topic-archive-list">暂无存档。</div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+          <div class="workflow-strip" aria-hidden="true">
+            <span class="workflow-badge">左侧：正文区</span>
+            <span id="openingBadge" class="workflow-badge">开头：未选</span>
+            <span id="draftBadge" class="workflow-badge">全文：未生成</span>
+            <span id="bodyBadge" class="workflow-badge">正文：样稿</span>
+          </div>
+          <div id="editor" class="editor" contenteditable="true" spellcheck="false">
+            <h2>加载最新稿</h2>
+            <p>正在载入。</p>
+          </div>
+        </article>
+
+        <aside class="side" hidden>
+          <section class="card work-card">
+            <div class="panel-tabs" role="tablist" aria-label="work panel">
+              <button type="button" class="panel-tab active" data-panel="rewrite">改句</button>
+              <button type="button" class="panel-tab advanced-tab" data-panel="draft" hidden aria-hidden="true">生成</button>
+              <button type="button" class="panel-tab advanced-tab" data-panel="cowrite">结构</button>
+            </div>
+
+            <section class="panel-view" data-view="cowrite">
+              <div class="cowrite-hero">
+                <div>
+                  <span class="eyebrow">SECTION FLOW</span>
+                  <h2>结构拆段</h2>
+                </div>
+                <strong id="cowriteProgressLabel">0/0</strong>
+              </div>
+              <div class="cowrite-progress" aria-hidden="true">
+                <span id="cowriteProgressFill"></span>
+              </div>
+              <textarea id="cowriteSeed" class="brief-input" placeholder="先写你的想法 / 这一期要说什么"></textarea>
+              <div class="cowrite-actions">
+                <button type="button" id="buildCowritePlan" class="primary">定主线和段落</button>
+                <button type="button" id="composeCowriteDraft">全部写完后合成</button>
+              </div>
+              <p id="cowriteState" class="panel-hint">可选：只在全文跑偏时用。</p>
+              <div class="generated-box section-card">
+                <div class="row compact">
+                  <span>当前这一节</span>
+                  <strong id="cowriteActiveBeat">未选</strong>
+                </div>
+                <p id="cowriteCurrentJob" class="section-job">先定主线。</p>
+                <p id="cowriteCurrentMust" class="section-must"></p>
+                <textarea id="cowriteSectionDraft" class="generated-preview compact-preview section-draft-editor" placeholder="还没有段落稿。"></textarea>
+                <textarea id="cowriteSectionSeed" class="brief-input compact-brief" placeholder="这一段你的原话 / 具体想补什么"></textarea>
+                <button type="button" id="writeCowriteSection" class="primary">写本节</button>
+                <p class="draft-scope-note">本节确认后进入下一节。全文最后再合成。</p>
+                <div class="feedback-row">
+                  <button type="button" id="insertCowriteSection">保存本节并下一节</button>
+                  <button type="button" id="saveCowriteSection">仅保存本节</button>
+                  <button type="button" id="clearCowriteSection">清空本节</button>
+                </div>
+              </div>
+              <div class="generated-box">
+                <div class="row compact">
+                  <span>主线</span>
+                  <strong id="cowriteThesisState">未定</strong>
+                </div>
+                <div id="cowriteThesis" class="compact-report">暂无。</div>
+              </div>
+              <div id="cowriteBeatList" class="cowrite-list">还没有段落任务。</div>
+            </section>
+
+            <section class="panel-view" data-view="draft" hidden aria-hidden="true">
+              <div class="cowrite-hero">
+                <div>
+                  <span class="eyebrow">FINAL DRAFT</span>
+                  <h2>合成整篇</h2>
+                </div>
+              </div>
+              <p class="panel-hint">正式写稿从这里进：先放主题、材料和你的判断，后台生成，不占住页面。</p>
+              <div id="currentDraftPreview" class="current-draft-preview">正在载入当前稿。</div>
+              <div class="start-card">
+                <div class="row compact">
+                  <span>正式写稿入口</span>
+                  <button type="button" id="fillStartCard" class="mini-button">Codex 先填</button>
+                </div>
+                <p id="startCardHint" class="panel-hint">先整理任务书；默认主笔写稿；再做门槛检查；不合格不载入。</p>
+                <textarea id="draftBrief" class="brief-input" placeholder="这篇要解释 / 证明 / 反驳什么？"></textarea>
+                <textarea id="draftClaim" class="brief-input compact-brief" placeholder="最想让观众记住的一句话"></textarea>
+                <textarea id="draftSources" class="brief-input compact-brief" placeholder="3 个具体材料、例子、数据、原句或经历"></textarea>
+                <textarea id="draftReaderObjection" class="brief-input compact-brief" placeholder="读者第一反应会反驳什么？"></textarea>
+                <textarea id="draftAvoidShape" class="brief-input compact-brief" placeholder="这篇不能写成什么样？"></textarea>
+                <textarea id="draftAuthorTake" class="brief-input compact-brief" placeholder="我的态度 / 取舍 / 最后想让读者做什么"></textarea>
+                <textarea id="draftNoInvent" class="brief-input compact-brief" placeholder="不能编什么？"></textarea>
+              </div>
+              <label class="toggle-row">
+                <input id="cleanAiTaste" type="checkbox" checked />
+                <span>编辑稿</span>
+              </label>
+              <div class="draft-actions">
+                <button type="button" id="generateDraft" class="primary">后台生成全文</button>
+              </div>
+              <p id="generateState" class="panel-hint"></p>
+              <div id="generateProgress" class="generation-status idle" aria-live="polite">
+                <div class="generation-status-head">
+                  <span id="generateProgressTitle">生成空闲</span>
+                  <strong id="generateElapsed">0s</strong>
+                </div>
+                <div class="generation-bar" aria-hidden="true"><span id="generateProgressBar"></span></div>
+                <p id="generateProgressDetail">后台链路：整理任务书 / 主笔接口写稿 / 自动收稿检查。</p>
+                <button type="button" id="cancelGenerate" class="ghost-wide" hidden>取消等待</button>
+              </div>
+              <details class="advanced-fold">
+                <summary>细节</summary>
+                <label class="title-field compact-field">
+                  <span>生成策略</span>
+                  <select id="draftPromptMode">
+                    <option value="pure_ds">自由提示</option>
+                    <option value="guided" selected>工作台约束</option>
+                  </select>
+                </label>
+                <label class="title-field compact-field">
+                  <span>模型链路</span>
+                  <select id="draftProvider">
+                    <option value="deepseek" selected>默认主笔</option>
+                  </select>
+                </label>
+                <button type="button" id="generateOpenings">开头候选</button>
+                <div class="generated-box">
+                  <div class="row compact">
+                    <span>生成预检</span>
+                    <button type="button" id="runPreflight" class="mini-button">检查</button>
+                  </div>
+                  <div id="preflightPreview" class="compact-report">还没预检。</div>
+                </div>
+                <div class="generated-box">
+                  <div class="row compact">
+                    <span>Codex 交接单</span>
+                    <strong>给主笔接口</strong>
+                  </div>
+                  <div id="editorialHandoffPreview" class="compact-report">生成前会先整理选题、材料和结构。</div>
+                </div>
+                <div class="generated-box">
+                  <div class="row compact">
+                    <span>本次风格卡</span>
+                    <button type="button" id="refreshStyleCard" class="mini-button">查看</button>
+                  </div>
+                  <pre id="sessionStyleCard" class="style-card-preview">生成前可先查看主笔接口会参考哪些偏好。</pre>
+                </div>
+                <div class="generated-box">
+                  <div class="row compact">
+                    <span>开头候选</span>
+                    <strong id="openingState">未生成</strong>
+                  </div>
+                  <div id="openingList" class="opening-list">暂无。</div>
+                </div>
+                <div class="generated-box">
+                  <div class="row compact">
+                    <span>生成稿</span>
+                    <div class="mini-actions">
+                      <button type="button" id="showRawDraft" class="mini-button">原稿</button>
+                      <button type="button" id="showCleanDraft" class="mini-button">编辑稿</button>
+                      <button type="button" id="loadGenerated">载入</button>
+                    </div>
+                  </div>
+                  <strong id="generatedTitle" class="generated-title">还没有生成结果</strong>
+                  <p id="generatedModeHint" class="preview-hint">当前版本。</p>
+                  <p id="generatedProvenance" class="provenance-line">来源：未生成。</p>
+                  <div id="generationAudit" class="generation-audit">还没有审计结果。</div>
+                  <div id="compliancePreview" class="compact-report">还没有遵守情况。</div>
+                  <div id="generatedPreview" class="generated-preview">暂无。</div>
+                </div>
+              </details>
+            </section>
+
+            <section class="panel-view active" data-view="rewrite">
+              <div class="action-block selection-block" aria-label="选句工具" hidden>
+                <div class="row selection-status-row" aria-hidden="true">
+                  <span>选句</span>
+                  <strong id="selectionState">待选</strong>
+                </div>
+                <p id="selectedText" hidden>选一句。</p>
+                <div class="selection-actions" aria-label="selected text actions">
+                  <button type="button" id="quickRewriteAction" class="quick-action primary-action" disabled>改句</button>
+                  <button type="button" id="saveBad" disabled>讨厌</button>
+                  <button type="button" id="saveGood" disabled>喜欢</button>
+                </div>
+              </div>
+              <div class="action-block paragraph-assist-block paragraph-assist-status-only" hidden>
+                <div class="row">
+                  <span>补段</span>
+                  <strong id="paragraphAssistState">待写段</strong>
+                </div>
+                <p id="paragraphAssistHint">双击正文空白插一段。</p>
+                <textarea
+                  id="paragraphAssistPromptInput"
+                  class="brief-input compact-brief"
+                  placeholder="这段想补什么：比如 接一下前后两段，补一个具体例子。"
+                  hidden
+                ></textarea>
+                <button type="button" id="paragraphAssistAction" class="quick-action" hidden aria-hidden="true" tabindex="-1">写这一段</button>
+              </div>
+              <div class="rewrite-context" hidden>
+                <div class="rewrite-meta">
+                  <p id="rewriteIssue" class="rewrite-issue">待改句。</p>
+                  <p id="rewriteProgress" class="rewrite-progress">待检查。</p>
+                </div>
+                <button type="button" id="nextAuditIssue" class="ghost-button" disabled>下一条问题</button>
+              </div>
+              <details class="mode-fold action-detail">
+                <summary>改句方式</summary>
+                <div class="mode-grid" role="group" aria-label="rewrite mode">
+                  <button type="button" class="mode active" data-mode="rewrite">换说法</button>
+                  <button type="button" class="mode" data-mode="plain-language">说人话</button>
+                  <button type="button" class="mode" data-mode="oralize">更顺口</button>
+                  <button type="button" class="mode" data-mode="less-ai">去套话</button>
+                </div>
+                <button type="button" id="runRewrite" class="primary" disabled>按当前方式改</button>
+              </details>
+              <div id="candidateList" class="candidate-list" hidden>暂无候选。</div>
+
+              <div class="action-block delivery-block" hidden aria-hidden="true">
+                <div class="row">
+                  <span>检查</span>
+                  <strong id="deliveryStatus" class="delivery-status unchecked">未查</strong>
+                </div>
+                <div class="delivery-actions">
+                  <button type="button" id="quickAuditAction" class="quick-action primary-action">扫硬伤</button>
+                </div>
+                <details id="proofFold" class="proof-fold" hidden>
+                  <summary id="proofSummary">偏好：待检查</summary>
+                  <div id="styleProofPanel" class="proof-panel" hidden>检查后显示本次用了哪些偏好。</div>
+                </details>
+                <p id="jobState" class="hint delivery-hint"></p>
+                <button type="button" id="rerunAudit" class="ghost-wide">机械检查</button>
+              </div>
+              <details class="context-card context-collapsed" aria-label="workbench context">
+                <summary>生成前参考</summary>
+                <div class="context-card-head">
+                  <span>风格规则</span>
+                  <button type="button" id="refreshWorkbenchContext" class="mini-button">刷新</button>
+                </div>
+                <div id="contextContract" class="context-list">读取执行合同。</div>
+                <div id="contextStyle" class="context-list">读取风格卡。</div>
+                <details class="context-fold">
+                  <summary>反例 / 黄金样本</summary>
+                  <div id="contextDemo" class="context-list">读取反例。</div>
+                  <div id="contextGold" class="context-list">读取黄金样本。</div>
+                  <div id="contextAmi" class="context-list">读取参考节奏。</div>
+                </details>
+              </details>
+            </section>
+          </section>
+
+          <details class="fold-card">
+            <summary>更多</summary>
+            <section class="card utility-card">
+              <div class="row">
+                <span>其他动作</span>
+                <strong id="documentPath">尚未写入工作区</strong>
+              </div>
+              <div class="utility-actions">
+                <button type="button" id="newDraft">新稿</button>
+                <button type="button" id="loadSample">样稿</button>
+                <button type="button" id="clearReview">清空候选</button>
+                <button type="button" id="recoverLatest">取回改句候选</button>
+              </div>
+            </section>
+          </details>
+
+          <details class="fold-card">
+            <summary>检查</summary>
+            <section class="card audit-card">
+              <div class="row">
+                <span>检查</span>
+                <strong id="auditScore">--</strong>
+              </div>
+              <div id="auditList" class="audit-list">点“扫硬伤”。</div>
+            </section>
+          </details>
+
+          <details class="fold-card">
+            <summary>文档</summary>
+            <section class="card files-card">
+            <div class="row">
+              <span>文档</span>
+              <button type="button" id="refreshDocuments">刷新</button>
+            </div>
+            <div id="legacyDocumentList" class="document-list">文档列表在顶部“主题”里打开。</div>
+            </section>
+          </details>
+
+          <details class="fold-card">
+            <summary>风格库</summary>
+            <section class="card memory-card">
+            <div class="row">
+              <span>风格库</span>
+              <button type="button" id="refreshMemory">刷新</button>
+            </div>
+            <p id="memoryCount" class="hint">0 条</p>
+            <p id="memorySummary" class="hint">高频反感：读取中。</p>
+            <div id="memoryList" class="memory-list">暂无记录。</div>
+            </section>
+          </details>
+        </aside>
+      </section>
+    </main>
+
+    <div id="selectionMenu" class="selection-menu" hidden>
+      <button type="button" data-run>改这句</button>
+      <button type="button" data-ban>讨厌</button>
+      <button type="button" data-like>喜欢</button>
+      <span id="selectionMenuStatus" class="selection-menu-status" hidden></span>
+    </div>
+
+    <section id="presentationMode" class="presentation-mode" hidden aria-hidden="true">
+      <div class="presentation-stage">
+        <header class="presentation-toolbar">
+          <div>
+            <span class="presentation-kicker">演示模式</span>
+            <strong id="presentationTitle">未命名稿件</strong>
+          </div>
+          <div class="presentation-controls">
+            <label>
+              <span>字号</span>
+              <input id="presentationFontSize" type="range" min="28" max="88" value="48" />
+              <strong id="presentationFontValue">48</strong>
+            </label>
+            <label>
+              <span>速度</span>
+              <input id="presentationSpeed" type="range" min="0" max="200" value="100" />
+              <strong id="presentationSpeedValue">1.0x</strong>
+            </label>
+            <button type="button" id="presentationPlay">开始</button>
+            <button type="button" id="presentationReset">回到开头</button>
+            <button type="button" id="presentationClose">退出</button>
+          </div>
+        </header>
+        <div id="presentationViewport" class="presentation-viewport">
+          <article id="presentationText" class="presentation-text"></article>
+        </div>
+        <footer class="presentation-footer">
+          <span id="presentationStats">0 字</span>
+          <span>Space 暂停 / 继续 · Esc 退出</span>
+        </footer>
+      </div>
+    </section>
+
+    <script src="app.js?v=workbench-edit-status-20260702c"></script>
+  </body>
+</html>

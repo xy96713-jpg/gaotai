@@ -1,0 +1,4 @@
+yt-dlp==2025.10.14.232845.dev0
+bgutil-ytdlp-pot-provider==1.3.1
+imageio-ffmpeg==0.6.0
+requests
