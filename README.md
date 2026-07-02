@@ -14,6 +14,8 @@
 
 正文、版本和风格库都留在本地。中文写作可以优先接入中文表现更好的国产模型，也可以换成任何兼容 OpenAI `/chat/completions` 的 API。
 
+![稿台界面截图](docs/assets/gaotai-workbench.png)
+
 ## 给 Agent
 
 ```text

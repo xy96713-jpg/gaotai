@@ -14,6 +14,8 @@ Gaotai is not another chat window. It turns revision into reusable actions: rewr
 
 Drafts, versions, and style memory stay local. For Chinese writing, you can start with Chinese-strong domestic models, or use any API compatible with OpenAI `/chat/completions`.
 
+![Gaotai workbench screenshot](docs/assets/gaotai-workbench.png)
+
 ## Give This To Your Agent
 
 ```text
