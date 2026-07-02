@@ -2,22 +2,40 @@
 
 English · [中文](README.md)
 
-Gaotai is a local writing desk for people who already write long-form drafts with AI.
+Gaotai is a local writing desk you can hand to Codex or another coding agent to deploy.
 
-It does not try to turn one prompt into a finished article. You write in a browser editor, rewrite one sentence at a time, save the lines you like or dislike, and run a final pass before export. The model gives you candidates and fills gaps. You keep control of the draft.
+Send your agent this repo, let it clone the project, copy `.env.local.example`, fill in your model API settings, and start the local server. You then open a browser editor instead of writing inside a chat box.
 
-Gaotai runs on your own machine. Bring any OpenAI-compatible `/chat/completions` API key, start the local server, and open the editor in your browser.
+Gaotai is less about “generate an article” and more about what happens after the first draft. Select one sentence and ask for rewrites. Mark a line as liked when it sounds right. Mark a line as disliked when it feels empty, generic, or too AI-written. Those choices go into a style memory and come back during later rewrites, paragraph fills, and final review.
 
-Good fit for:
+It runs on your own machine. Drafts, versions, and style memory stay local. The default model route uses any OpenAI-compatible `/chat/completions` API, so the project is not tied to one provider.
 
-- Writers who use AI for articles, scripts, demos, or project notes but do not want to work inside a chat box.
-- People who want sentence-level rewrite, preference memory, topic/version saving, and a lightweight final review.
-- Technical users comfortable with a local Python service, API keys, and local file storage.
+## Agent Setup Prompt
 
-Not a good fit for:
+```text
+Clone https://github.com/xy96713-jpg/gaotai, copy .env.local.example to .env.local,
+fill GAOTAI_API_KEY / GAOTAI_BASE_URL / GAOTAI_MODEL, run make workbench-start,
+then open http://127.0.0.1:8766/v2/.
+```
 
-- Public SaaS, team accounts, cloud sync, or multi-user collaboration.
-- Users who want a no-config desktop app.
+## Good Fit
+
+- You already use AI for articles, scripts, demos, or project notes.
+- You care more about editing a draft than getting a single full response from chat.
+- You want the system to remember which lines fit your style and which ones should be avoided.
+- You are comfortable with a local Python service, API keys, and local file storage.
+
+## Core Loop
+
+```text
+prepare material -> draft -> rewrite one sentence -> save preferences -> final review -> export
+```
+
+The middle matters most:
+
+- **Rewrite**: select one sentence and rewrite only that sentence.
+- **Like / dislike**: save what should be repeated or avoided next time.
+- **Style memory**: carry those choices into later rewrites, paragraph fills, and final review.
 
 ## Quick Start
 
